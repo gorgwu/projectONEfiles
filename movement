@@ -1,0 +1,72 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerMovement : MonoBehaviour
+{
+    public CharacterController controller;
+
+    private float speed = 9f;
+    private float sprintSpeed = 13f;
+    private float jumpHeight = 2.5f;
+    private float gravity = -12.5f;
+    private float terminalVelocity = -75;
+
+    private Vector3 velocity;
+    private bool isGrounded;
+    private bool isSprinting = false;
+
+    void Update()
+    {
+        isGrounded = controller.isGrounded;
+
+        if (isGrounded && velocity.y < 0f)
+        {
+            velocity.y = 0f;
+        }
+
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+        Sprint();
+        Vector3 move = transform.right * x + transform.forward * z;
+        float currentSpeed = isSprinting ? sprintSpeed : speed;
+        controller.Move(move * currentSpeed * Time.deltaTime);
+
+        Jump();
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    void Sprint()
+    {
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.W))
+        {
+            if (!isSprinting)
+            {
+                isSprinting = true;
+                Camera.main.fieldOfView = 62;
+            }
+        }
+        else
+        {
+            if (isSprinting)
+            {
+                isSprinting = false;
+                Camera.main.fieldOfView = 60;
+            }
+        }
+    }
+
+    void Jump()
+    {
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        }
+        velocity.y += gravity * Time.deltaTime;
+
+        if (!isGrounded && velocity.y < terminalVelocity)
+        {
+            velocity.y = terminalVelocity;
+        }
+    }
+}
