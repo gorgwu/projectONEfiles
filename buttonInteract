@@ -1,0 +1,62 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+using UnityEngine.SceneManagement;
+
+public class ButtonInteract : MonoBehaviour
+{
+    public GameObject player;
+    public GameObject button;
+
+    public bool buttonPressedOne;
+    public bool buttonPressedTwo;
+
+    float buttonMovement = 0.25f;
+    float playerReach = 8f;
+
+    [SerializeField] private AudioClip buttonSoundClip;
+
+    private void Start()
+    {
+        buttonPressedOne = false;
+        buttonPressedTwo = false;
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                float distance = Vector3.Distance(player.transform.position, button.transform.position);
+                if (distance < playerReach)
+                {
+                    if (hit.collider.gameObject.name == "BlueCollider" && !buttonPressedOne)
+                    {
+                        button.transform.Translate(Vector3.up * buttonMovement);
+                        buttonPressedOne = true;
+                    }
+                    else if (hit.collider.gameObject.name == "GreenCollider" && !buttonPressedTwo)
+                    {
+                        button.transform.Translate(Vector3.up * buttonMovement);
+                        buttonPressedTwo = true;
+                        SoundManager.instance.PlaySound(buttonSoundClip);
+
+                        StartCoroutine(NextLevel());
+                    }
+                }
+            }
+        }
+    }
+
+    private IEnumerator NextLevel()
+    {
+        yield return new WaitForSeconds(2f);
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+}
